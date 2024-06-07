@@ -25,6 +25,9 @@ extension ECS.Entities {
             let cSprite = ECS.Components.Sprite(textureName: "waypoint", at: spritePosition, parentNode: scene.rootNode)
             let cSelectioner = ECS.Components.Selectioner(parentSprite: cSprite.sprite)
 
+            cSprite.sprite.setOwnerEntityId(self.uuid)
+            cSelectioner.node.setOwnerEntityId(self.uuid)
+
             addComponent(cSprite)
             addComponent(cSelectioner)
         }

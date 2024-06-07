@@ -35,6 +35,11 @@ final class InputStateMachine: GKStateMachine {
     }
 
     func controlTap(at position: CGPoint, shiftKey: Bool = false) {
+        if cs is InputState.PrimaryState {
+            enter(InputState.PlaceWaypoint.self)
+        } else if cs is InputState.PlaceWaypoint {
+            enter(InputState.PrimaryState.self)
+        }
     }
 
     func dragBackground(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {

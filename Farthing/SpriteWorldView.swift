@@ -64,6 +64,7 @@ struct SpriteWorldView: View {
 
         .gesture(
             TapGesture().modifiers(.control).onEnded {
+                game.controlTap(at: game.hoverLocation!)
             }
         )
 

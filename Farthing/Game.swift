@@ -30,6 +30,7 @@ final class Game: ObservableObject {
     }
 
     func controlTap(at position: CGPoint, shiftKey: Bool = false) {
+        inputStateMachine.controlTap(at: position)
     }
 
     func drag(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {

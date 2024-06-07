@@ -8,6 +8,14 @@ extension InputState {
     final class PrimaryState: InputState {
         override var isTappableState: Bool { true }
 
+        override func controlTapBackground(at position: CGPoint, shiftKey: Bool = false) {
+
+        }
+
+        override func controlTapEntity(_ entity: ECS.Entity, shiftKey: Bool = false) {
+
+        }
+
         override func tapBackground(at position: CGPoint, shiftKey: Bool = false) {
             sm.selectionController.deselectAll()
 

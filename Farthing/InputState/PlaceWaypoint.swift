@@ -8,6 +8,14 @@ extension InputState {
     final class PlaceWaypoint: InputState {
         override var isTappableState: Bool { true }
 
+        override func controlTapBackground(at position: CGPoint, shiftKey: Bool = false) {
+
+        }
+
+        override func controlTapEntity(_ entity: ECS.Entity, shiftKey: Bool = false) {
+
+        }
+
         override func tapBackground(at position: CGPoint, shiftKey: Bool = false) {
             sm.selectionController.deselectAll()
 
@@ -18,10 +26,12 @@ extension InputState {
         }
 
         override func tapEntity(_ entity: ECS.Entity, shiftKey: Bool = false) {
-            if !shiftKey {
-                sm.selectionController.deselectAll()
+            if shiftKey {
+                sm.selectionController.toggleSelect(entity)
+                return
             }
 
+            sm.selectionController.deselectAll()
             sm.selectionController.select(entity)
         }
     }
