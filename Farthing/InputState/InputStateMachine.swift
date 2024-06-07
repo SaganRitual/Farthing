@@ -49,7 +49,6 @@ final class InputStateMachine: GKStateMachine {
 
     func dragEnd(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
         cs.dragEnd(startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey)
-        print("entering completion state")
         enter(dragCompletionState)
 
         dragCompletionState = nil

@@ -95,11 +95,11 @@ final class SelectionController {
 
     func toggleSelect(_ entity: ECS.Entity) {
         let selectioner = entity.component(ofType: ECS.Components.Selectioner.self)!
-        selectioner.select()
+        selectioner.toggleSelect()
     }
 
     func toggleSelect(_ entities: Set<ECS.Entity>) {
-        entities.forEach { select($0) }
+        entities.forEach { toggleSelect($0) }
     }
 
 }

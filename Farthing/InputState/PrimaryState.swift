@@ -18,10 +18,12 @@ extension InputState {
         }
 
         override func tapEntity(_ entity: ECS.Entity, shiftKey: Bool = false) {
-            if !shiftKey {
-                sm.selectionController.deselectAll()
+            if shiftKey {
+                sm.selectionController.toggleSelect(entity)
+                return
             }
 
+            sm.selectionController.deselectAll()
             sm.selectionController.select(entity)
         }
     }
