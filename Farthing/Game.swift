@@ -66,6 +66,24 @@ final class Game: ObservableObject {
         }
 
         if entity is ECS.Entities.HandleSpaceEdit {
+            assert(inputStateMachine.cs is InputState.EditSpaceAttributes)
+
+            inputStateMachine.dragPrimaryObject = entity
+
+            if let handleRotationOffset = topNode.userData?["rotationOffset"] as? Double {
+                inputStateMachine.handleRotationOffset = handleRotationOffset
+            } else {
+                let te = entity as! ECS.Entities.HandleSpaceEdit
+                
+                if topNode === te.primaryNode {
+                    inputStateMachine.handleRotationOffset = nil
+                }
+            }
+
+            inputStateMachine.dragHandle(
+                startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey
+            )
+
             return
         }
 

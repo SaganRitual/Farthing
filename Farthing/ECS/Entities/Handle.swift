@@ -24,18 +24,24 @@ extension ECS.Entities {
 
             ring = Self.makeRing()
 
-            let positions = [
-                CGPoint(x: 0, y: Self.ringRadius),
-                CGPoint(x: Self.ringRadius, y: 0),
-                CGPoint(x: 0, y: -Self.ringRadius),
-                CGPoint(x: -Self.ringRadius, y: 0)
+            let setups: [(position: CGPoint, rotationOffset: Double)] = [
+                (CGPoint(x: 0, y: +Self.ringRadius), 3 * .pi / 2),
+                (CGPoint(x: +Self.ringRadius, y: 0), 0 * .pi / 2),
+                (CGPoint(x: 0, y: -Self.ringRadius), 1 * .pi / 2),
+                (CGPoint(x: -Self.ringRadius, y: 0), 2 * .pi / 2)
             ]
 
-            handles = positions.map { position in
+            handles = setups.indices.map { ix in
                 let handle = Self.makeHandle()
-                handle.position = position
+                handle.position = setups[ix].position
+                handle.userData = ["rotationOffset": setups[ix].rotationOffset]
                 return handle
             }
+
+            handles[0].fillColor = .red
+            handles[1].fillColor = .green
+            handles[2].fillColor = .blue
+            handles[3].fillColor = .white
 
             super.init()
 
@@ -61,7 +67,13 @@ extension ECS.Entities {
             targetEntity = entity
 
             let cSprite = entity.component(ofType: ECS.Components.Sprite.self)!
+
             primaryNode.position = cSprite.sprite.position
+            primaryNode.zRotation = cSprite.sprite.zRotation
+
+            let scale = sqrt(cSprite.sprite.xScale)
+            primaryNode.setScale(scale)
+
             show()
         }
 
@@ -72,6 +84,11 @@ extension ECS.Entities {
 
         func hide() { primaryNode.isHidden = true }
         func show() { primaryNode.isHidden = false }
+
+        func setDragAnchor() {
+            let cSprite = targetEntity!.component(ofType: ECS.Components.Sprite.self)!
+            dragAnchor = cSprite.sprite.position
+        }
 
         static func makeHandle() -> SKShapeNode {
             let handle = SKShapeNode(circleOfRadius: handleRadius)
@@ -89,8 +106,7 @@ extension ECS.Entities {
             let ring = SKShapeNode(circleOfRadius: ringRadius)
             ring.lineWidth = 1
             ring.strokeColor = .green
-            ring.fillColor = .clear
-            ring.blendMode = .replace
+            ring.fillColor = SKColor(calibratedWhite: 1, alpha: 0.01)
             ring.isHidden = false
             ring.zPosition = 10
 

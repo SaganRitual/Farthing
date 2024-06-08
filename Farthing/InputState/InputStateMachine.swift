@@ -11,6 +11,8 @@ final class InputStateMachine: GKStateMachine {
 
     var dragPrimaryObject: ECS.Entity?
     var dragCompletionState: InputState.Type!
+    var editCompletionState: InputState.Type!
+    var handleRotationOffset: Double?
 
     var cs: InputState { currentState! as! InputState }
 
@@ -46,18 +48,17 @@ final class InputStateMachine: GKStateMachine {
         cs.controlTapEntity(entity, shiftKey: shiftKey)
 
         if cs is InputState.EditSpaceAttributes {
-
             if entity === ecs.handleSpaceEdit {
                 // User control-tapped the current edit target, so we're just leaving edit mode
-                enter(dragCompletionState)
-                dragCompletionState = nil
+                enter(editCompletionState)
+                editCompletionState = nil
             }
 
             // If the user control-tapped a different edit target we'll stay
             // in edit mode, but the state will have attached us to that new target
 
         } else {
-            dragCompletionState = type(of: cs)
+            editCompletionState = type(of: cs)
             enter(InputState.EditSpaceAttributes.self)
         }
     }
@@ -78,6 +79,12 @@ final class InputStateMachine: GKStateMachine {
 
         dragCompletionState = nil
         dragPrimaryObject = nil
+    }
+
+    func dragHandle(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
+        dragCompletionState = type(of: cs)
+        ecs.handleSpaceEdit.setDragAnchor()
+        enter(InputState.DraggingHandleSpaceAttributes.self)
     }
 
     func dragSelected(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {

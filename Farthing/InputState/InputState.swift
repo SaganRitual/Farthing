@@ -7,6 +7,7 @@ class InputState: GKState {
 
     static let states: [InputState] = [
         DraggingBackground(),
+        DraggingHandleSpaceAttributes(),
         DraggingGenericEntity(),
         EditSpaceAttributes(),
         PrimaryState(),
@@ -42,10 +43,6 @@ class InputState: GKState {
 extension InputState {
 
     final class DraggingHandleAddPoint: InputState {
-        override var isDraggingState: Bool { true }
-    }
-
-    final class DraggingHandleSpaceAttributes: InputState {
         override var isDraggingState: Bool { true }
     }
 
