@@ -11,16 +11,24 @@ extension ECS.Components {
         init(textureName: String, at position: CGPoint, parentNode: SKNode) {
             sprite = SKSpriteNode(imageNamed: textureName)
             sprite.position = position
-            sprite.name = "fucksprite"
 
             parentNode.addChild(sprite)
 
             super.init()
         }
 
+        init(sprite: SKSpriteNode, parentNode: SKNode) {
+            self.sprite = sprite
+            parentNode.addChild(sprite)
+            super.init()
+        }
+
         required init?(coder aDecoder: NSCoder) {
             fatalError("init(coder:) has not been implemented")
         }
+
+        func hide() { sprite.isHidden = true }
+        func show() { sprite.isHidden = false }
     }
 
 }

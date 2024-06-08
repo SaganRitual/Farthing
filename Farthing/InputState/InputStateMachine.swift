@@ -12,7 +12,7 @@ final class InputStateMachine: GKStateMachine {
     var dragPrimaryObject: ECS.Entity?
     var dragCompletionState: InputState.Type!
 
-    var cs: InputState { currentState as! InputState }
+    var cs: InputState { currentState! as! InputState }
 
     init(
         _ ecs: ECS,
@@ -42,6 +42,26 @@ final class InputStateMachine: GKStateMachine {
         }
     }
 
+    func controlTapEntity(_ entity: ECS.Entity, shiftKey: Bool = false) {
+        cs.controlTapEntity(entity, shiftKey: shiftKey)
+
+        if cs is InputState.EditSpaceAttributes {
+
+            if entity === ecs.handleSpaceEdit {
+                // User control-tapped the current edit target, so we're just leaving edit mode
+                enter(dragCompletionState)
+                dragCompletionState = nil
+            }
+
+            // If the user control-tapped a different edit target we'll stay
+            // in edit mode, but the state will have attached us to that new target
+
+        } else {
+            dragCompletionState = type(of: cs)
+            enter(InputState.EditSpaceAttributes.self)
+        }
+    }
+
     func dragBackground(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
         if !cs.isDraggingState {
             // If this is a dragBegin, remember what state to return to on dragEnd
@@ -65,8 +85,9 @@ final class InputStateMachine: GKStateMachine {
             // If this is a dragBegin, remember what state to return do on dragEnd
             dragCompletionState = type(of: cs)
 
+            // And remember where all the dragees started
             if let selected = selectionController.getSelected() {
-                ecs.setDragAnchors(for: selected)
+                cs.setDragAnchors(for: selected)
             }
         }
 
@@ -76,9 +97,31 @@ final class InputStateMachine: GKStateMachine {
 
     func tapBackground(at position: CGPoint, shiftKey: Bool = false) {
         cs.tapBackground(at: position, shiftKey: shiftKey)
+
+        if cs is InputState.EditSpaceAttributes {
+            // We're in edit mode and the user clicked on
+            // the background. Exit edit mode, and pass the
+            // tap to the new state
+            enter(dragCompletionState)
+            cs.tapBackground(at: position, shiftKey: shiftKey)
+            return
+        }
     }
 
     func tapEntity(_ entity: ECS.Entity, shiftKey: Bool = false) {
+        if entity === ecs.handleSpaceEdit {
+            // The user clicked on the edit handles; just do nothing
+            assert(cs is InputState.EditSpaceAttributes)
+            return
+        }
+
         cs.tapEntity(entity, shiftKey: shiftKey)
+
+        if cs is InputState.EditSpaceAttributes {
+            // We're in edit mode and the user clicked on
+            // an entity other than the handles. Leave edit mode
+            enter(dragCompletionState)
+            return
+        }
     }
 }

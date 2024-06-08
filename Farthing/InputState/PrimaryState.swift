@@ -13,7 +13,10 @@ extension InputState {
         }
 
         override func controlTapEntity(_ entity: ECS.Entity, shiftKey: Bool = false) {
+            sm.selectionController.deselectAll()
+            sm.selectionController.select(entity)
 
+            sm.ecs.handleSpaceEdit.attach(to: entity)
         }
 
         override func tapBackground(at position: CGPoint, shiftKey: Bool = false) {

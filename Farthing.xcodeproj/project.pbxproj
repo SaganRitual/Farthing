@@ -33,6 +33,8 @@
 		D4119AF32C13422700F4EC33 /* PlaceWaypoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4119AF22C13422700F4EC33 /* PlaceWaypoint.swift */; };
 		D4119AF52C13440800F4EC33 /* SpriteWorldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4119AF42C13440800F4EC33 /* SpriteWorldView.swift */; };
 		D4119AF72C1346E600F4EC33 /* Physics.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4119AF62C1346E600F4EC33 /* Physics.swift */; };
+		D4119AF92C13C63F00F4EC33 /* Shape.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4119AF82C13C63F00F4EC33 /* Shape.swift */; };
+		D4119AFB2C146BC600F4EC33 /* EditSpaceAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4119AFA2C146BC600F4EC33 /* EditSpaceAttributes.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -64,6 +66,8 @@
 		D4119AF22C13422700F4EC33 /* PlaceWaypoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceWaypoint.swift; sourceTree = "<group>"; };
 		D4119AF42C13440800F4EC33 /* SpriteWorldView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpriteWorldView.swift; sourceTree = "<group>"; };
 		D4119AF62C1346E600F4EC33 /* Physics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Physics.swift; sourceTree = "<group>"; };
+		D4119AF82C13C63F00F4EC33 /* Shape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shape.swift; sourceTree = "<group>"; };
+		D4119AFA2C146BC600F4EC33 /* EditSpaceAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditSpaceAttributes.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -155,6 +159,7 @@
 			isa = PBXGroup;
 			children = (
 				D4119AD62C111FD700F4EC33 /* Selectioner.swift */,
+				D4119AF82C13C63F00F4EC33 /* Shape.swift */,
 				D4119AD82C11205300F4EC33 /* Sprite.swift */,
 			);
 			path = Components;
@@ -165,6 +170,7 @@
 			children = (
 				D4119AEC2C12A36A00F4EC33 /* DraggingBackground.swift */,
 				D4119AEE2C133A2300F4EC33 /* DraggingGenericEntity.swift */,
+				D4119AFA2C146BC600F4EC33 /* EditSpaceAttributes.swift */,
 				D4119ADF2C1124A600F4EC33 /* InputState.swift */,
 				D4119AE52C1209BF00F4EC33 /* InputStateMachine.swift */,
 				D4119AF02C1341D400F4EC33 /* PrimaryState.swift */,
@@ -263,6 +269,7 @@
 				D4119AD52C111FAF00F4EC33 /* Handle.swift in Sources */,
 				D4119AC52C11165E00F4EC33 /* Game.swift in Sources */,
 				D4119AC92C11179400F4EC33 /* Scene.swift in Sources */,
+				D4119AF92C13C63F00F4EC33 /* Shape.swift in Sources */,
 				D4119AEA2C12927A00F4EC33 /* CoreGraphics+Extensions.swift in Sources */,
 				D4119AF72C1346E600F4EC33 /* Physics.swift in Sources */,
 				D4119AE62C1209BF00F4EC33 /* InputStateMachine.swift in Sources */,
@@ -273,6 +280,7 @@
 				D4119AD32C111F6600F4EC33 /* Waypoint.swift in Sources */,
 				D4119AE02C1124A600F4EC33 /* InputState.swift in Sources */,
 				D4119AB62C11159A00F4EC33 /* FarthingApp.swift in Sources */,
+				D4119AFB2C146BC600F4EC33 /* EditSpaceAttributes.swift in Sources */,
 				D4119AF32C13422700F4EC33 /* PlaceWaypoint.swift in Sources */,
 				D4119AC72C1116AE00F4EC33 /* SceneDelegate.swift in Sources */,
 				D4119AF12C1341D400F4EC33 /* PrimaryState.swift in Sources */,

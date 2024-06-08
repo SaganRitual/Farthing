@@ -7,7 +7,7 @@ import SwiftUI
 enum SpriteWorld { }
 
 final class Game: ObservableObject {
-    let ecs = ECS()
+    let ecs: ECS
     let inputStateMachine: InputStateMachine
     let scene = SpriteWorld.Scene()
     let selectionController: SelectionController
@@ -20,6 +20,7 @@ final class Game: ObservableObject {
     init() {
         scene.delegate = sceneDelegate
 
+        ecs = ECS(scene)
         selectionController = SelectionController(ecs, scene)
         selectionMarquee = SpriteWorld.SelectionMarquee(scene)
         inputStateMachine = InputStateMachine(ecs, scene, selectionController, selectionMarquee)
@@ -30,7 +31,18 @@ final class Game: ObservableObject {
     }
 
     func controlTap(at position: CGPoint, shiftKey: Bool = false) {
-        inputStateMachine.controlTap(at: position)
+        guard let tappedNode = scene.getTopNode(at: position) else {
+            inputStateMachine.controlTap(at: position, shiftKey: shiftKey)
+            return
+        }
+
+        guard let entity = ecs.getOwnerEntity(for: tappedNode) else {
+            // So far we don't have any tappable sprites that aren't
+            // entities or children of entities
+            return
+        }
+
+        inputStateMachine.controlTapEntity(entity, shiftKey: shiftKey)
     }
 
     func drag(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
@@ -53,14 +65,24 @@ final class Game: ObservableObject {
             return
         }
 
-        if !selectionController.entityIsSelected(entity) {
-            selectionController.deselectAll()
-            selectionController.select(entity)
+        if entity is ECS.Entities.HandleSpaceEdit {
+            return
         }
 
-        inputStateMachine.dragSelected(
-            startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey
-        )
+        if ecs.isEntitySelectable(entity) {
+            if !selectionController.entityIsSelected(entity) {
+                selectionController.deselectAll()
+                selectionController.select(entity)
+            }
+
+            inputStateMachine.dragSelected(
+                startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey
+            )
+
+            return
+        }
+
+        fatalError("Dragging in unknown state")
     }
 
     func dragEnd(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {

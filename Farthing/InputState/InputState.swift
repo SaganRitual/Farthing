@@ -8,6 +8,7 @@ class InputState: GKState {
     static let states: [InputState] = [
         DraggingBackground(),
         DraggingGenericEntity(),
+        EditSpaceAttributes(),
         PrimaryState(),
         PlaceWaypoint()
     ]
@@ -19,6 +20,13 @@ class InputState: GKState {
 
     override func didEnter(from previousState: GKState?) {
         print("Did enter \(type(of: self))")
+    }
+
+    func setDragAnchors(for entities: Set<ECS.Entity>) {
+        entities.forEach { entity in
+            let cSprite = entity.component(ofType: ECS.Components.Sprite.self)!
+            entity.dragAnchor = cSprite.sprite.position
+        }
     }
 
     func controlTapBackground(at position: CGPoint, shiftKey: Bool = false) { }
@@ -46,10 +54,6 @@ extension InputState {
     }
 
     final class EditAddPin: InputState {
-        override var isTappableState: Bool { true }
-    }
-
-    final class EditSpaceAttributes: InputState {
         override var isTappableState: Bool { true }
     }
 

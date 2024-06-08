@@ -5,18 +5,28 @@ import GameplayKit
 
 final class ECS {
     let handleAddPin = ECS.Entities.HandleAddPin()
-    let handleSpaceEdit = ECS.Entities.HandleSpaceEdit()
+    let handleSpaceEdit: ECS.Entities.HandleSpaceEdit
 
     var entities = [UUID: ECS.Entity]()
 
+    init(_ scene: SpriteWorld.Scene) {
+        handleSpaceEdit = ECS.Entities.HandleSpaceEdit(scene: scene)
+    }
+
     func getOwnerEntity(for node: SKNode) -> ECS.Entity? {
-        guard
-            let uuid = node.getOwnerEntityId(),
-            let entity = entities[uuid] else {
+        guard let uuid = node.getOwnerEntityId() else {
             return nil
         }
 
-        return entity
+        if let entity = entities[uuid] {
+            return entity
+        }
+
+        if uuid == handleSpaceEdit.uuid {
+            return handleSpaceEdit
+        }
+
+        return nil
     }
 
     func getSelectioner(for entity: ECS.Entity) -> ECS.Components.Selectioner {
@@ -37,13 +47,6 @@ final class ECS {
         }
 
         return cSelectioner.isSelected
-    }
-
-    func setDragAnchors(for entities: Set<ECS.Entity>) {
-        entities.forEach { entity in
-            let cSprite = entity.component(ofType: ECS.Components.Sprite.self)!
-            entity.dragAnchor = cSprite.sprite.position
-        }
     }
 }
 
