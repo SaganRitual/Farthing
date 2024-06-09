@@ -26,99 +26,19 @@ final class Game: ObservableObject {
         inputStateMachine = InputStateMachine(ecs, scene, selectionController, selectionMarquee)
     }
 
-    func continueDrag(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
-        inputStateMachine.continueDrag(startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey)
-    }
-
     func controlTap(at position: CGPoint, shiftKey: Bool = false) {
-        guard let tappedNode = scene.getTopNode(at: position) else {
-            inputStateMachine.controlTap(at: position, shiftKey: shiftKey)
-            return
-        }
-
-        guard let entity = ecs.getOwnerEntity(for: tappedNode) else {
-            // So far we don't have any tappable sprites that aren't
-            // entities or children of entities
-            return
-        }
-
-        inputStateMachine.controlTapEntity(entity, shiftKey: shiftKey)
+        (inputStateMachine.cs as? InputStateProtocols.ControlTap)?.controlTap(at: position, shiftKey: shiftKey)
     }
 
     func drag(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
-        if inputStateMachine.cs.isDraggingState {
-            continueDrag(startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey)
-            return
-        }
-
-        // We're not already in a dragging state, so this is a dragBegin
-
-        guard let topNode = scene.getTopNode(at: startVertex) else {
-            inputStateMachine.dragBackground(
-                startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey
-            )
-
-            return
-        }
-
-        guard let entity = ecs.getOwnerEntity(for: topNode) else {
-            return
-        }
-
-        if entity is ECS.Entities.HandleSpaceEdit {
-            assert(inputStateMachine.cs is InputState.EditSpaceAttributes)
-
-            inputStateMachine.dragPrimaryObject = entity
-
-            if let handleRotationOffset = topNode.userData?["rotationOffset"] as? Double {
-                inputStateMachine.handleRotationOffset = handleRotationOffset
-            } else {
-                let te = entity as! ECS.Entities.HandleSpaceEdit
-                
-                if topNode === te.primaryNode {
-                    inputStateMachine.handleRotationOffset = nil
-                }
-            }
-
-            inputStateMachine.dragHandle(
-                startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey
-            )
-
-            return
-        }
-
-        if ecs.isEntitySelectable(entity) {
-            if !selectionController.entityIsSelected(entity) {
-                selectionController.deselectAll()
-                selectionController.select(entity)
-            }
-
-            inputStateMachine.dragSelected(
-                startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey
-            )
-
-            return
-        }
-
-        fatalError("Dragging in unknown state")
+        (inputStateMachine.cs as? InputStateProtocols.Drag)?.drag(startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey)
     }
 
     func dragEnd(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
-        inputStateMachine.dragEnd(startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey)
+        (inputStateMachine.cs as? InputStateProtocols.DragEnd)?.dragEnd(startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey)
     }
 
     func tap(at position: CGPoint, shiftKey: Bool = false) {
-        guard let tappedNode = scene.getTopNode(at: position) else {
-            inputStateMachine.tapBackground(at: position, shiftKey: shiftKey)
-            return
-        }
-
-        guard let entity = ecs.getOwnerEntity(for: tappedNode) else {
-            // So far we don't have any tappable sprites that aren't
-            // entities or children of entities
-            return
-        }
-
-        inputStateMachine.tapEntity(entity, shiftKey: shiftKey)
+        (inputStateMachine.cs as? InputStateProtocols.Tap)?.tap(at: position, shiftKey: shiftKey)
     }
 }

@@ -3,6 +3,50 @@
 import Foundation
 import GameplayKit
 
+enum InputStateProtocols {
+
+    protocol ControlTap {
+        func controlTap(at position: CGPoint, shiftKey: Bool)
+    }
+
+    protocol ControlTapBackground {
+        func controlTapBackground(at position: CGPoint, shiftKey: Bool)
+    }
+
+    protocol ControlTapEntity {
+        func controlTapEntity(_ entity: ECS.Entity, shiftKey: Bool)
+    }
+
+    protocol Drag {
+        func drag(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool)
+    }
+
+    protocol DragBackground {
+        func dragBackground(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool)
+    }
+
+    protocol DragEntity {
+        func dragEntity(_ entity: ECS.Entity, startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool)
+    }
+
+    protocol DragEnd {
+        func dragEnd(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool)
+    }
+
+    protocol Tap {
+        func tap(at position: CGPoint, shiftKey: Bool)
+    }
+
+    protocol TapBackground {
+        func tapBackground(at position: CGPoint, shiftKey: Bool)
+    }
+
+    protocol TapEntity {
+        func tapEntity(_ entity: ECS.Entity, shiftKey: Bool)
+    }
+
+}
+
 class InputState: GKState {
 
     static let states: [InputState] = [
@@ -29,15 +73,6 @@ class InputState: GKState {
             entity.dragAnchor = cSprite.sprite.position
         }
     }
-
-    func controlTapBackground(at position: CGPoint, shiftKey: Bool = false) { }
-    func controlTapEntity(_ entity: ECS.Entity, shiftKey: Bool = false) { }
-
-    func drag(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) { }
-    func dragEnd(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) { }
-
-    func tapBackground(at position: CGPoint, shiftKey: Bool = false) { }
-    func tapEntity(_ entity: ECS.Entity, shiftKey: Bool = false) { }
 }
 
 extension InputState {

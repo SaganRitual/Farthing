@@ -32,11 +32,25 @@ final class InputStateMachine: GKStateMachine {
         enter(InputState.PrimaryState.self)
     }
 
-    func continueDrag(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
-        cs.drag(startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey)
+    func controlTap(at position: CGPoint, shiftKey: Bool = false) {
+        guard let tappedNode = scene.getTopNode(at: position) else {
+            controlTapBackground(at: position, shiftKey: shiftKey)
+            return
+        }
+
+        guard let entity = ecs.getOwnerEntity(for: tappedNode) else {
+            // So far we don't have any tappable sprites that aren't
+            // entities or children of entities
+            return
+        }
+
+        controlTapEntity(entity, shiftKey: shiftKey)
     }
 
-    func controlTap(at position: CGPoint, shiftKey: Bool = false) {
+    func controlTapBackground(at position: CGPoint, shiftKey: Bool = false) {
+        // Don't call into the states bc right now this is just
+        // a q&d way to toggle between gremlins & waypoints. Control-tap
+        // on the background will ultimately cause a context menu, or maybe nothing
         if cs is InputState.PrimaryState {
             enter(InputState.PlaceWaypoint.self)
         } else if cs is InputState.PlaceWaypoint {
@@ -45,7 +59,7 @@ final class InputStateMachine: GKStateMachine {
     }
 
     func controlTapEntity(_ entity: ECS.Entity, shiftKey: Bool = false) {
-        cs.controlTapEntity(entity, shiftKey: shiftKey)
+        (cs as! InputStateProtocols.ControlTapEntity).controlTapEntity(entity, shiftKey: shiftKey)
 
         if cs is InputState.EditSpaceAttributes {
             if entity === ecs.handleSpaceEdit {
@@ -63,6 +77,11 @@ final class InputStateMachine: GKStateMachine {
         }
     }
 
+    func dragBackgroundBegin(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
+        enter(InputState.DraggingBackground.self)
+        (cs as! InputStateProtocols.Drag).drag(startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey)
+    }
+
     func dragBackground(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
         if !cs.isDraggingState {
             // If this is a dragBegin, remember what state to return to on dragEnd
@@ -70,47 +89,149 @@ final class InputStateMachine: GKStateMachine {
         }
 
         enter(InputState.DraggingBackground.self)
-        cs.drag(startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey)
+        (cs as! InputStateProtocols.Drag).drag(startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey)
+    }
+
+    func dragBegin(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
+        dragCompletionState = type(of: cs)
+
+        // This is a begin drag. Figure out what's under the mouse and decide
+        // which state to enter, although I think we're not supposed to enter
+        // the state from here. I'll ask the ai about that part
+        guard let topNode = scene.getTopNode(at: startVertex) else {
+            dragBackgroundBegin(
+                startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey
+            )
+
+            return
+        }
+
+        guard let entity = ecs.getOwnerEntity(for: topNode) else {
+            return
+        }
+
+        if entity is ECS.Entities.HandleSpaceEdit {
+            dragHandleBegin(
+                topNode: topNode,
+                entity: entity,
+                startVertex: startVertex,
+                endVertex: endVertex,
+                shiftKey: shiftKey
+            )
+
+            return
+        }
+
+        if ecs.isEntitySelectable(entity) {
+            dragSelectedBegin(
+                entity: entity, startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey
+            )
+
+            return
+        }
     }
 
     func dragEnd(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
-        cs.dragEnd(startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey)
         enter(dragCompletionState)
 
         dragCompletionState = nil
         dragPrimaryObject = nil
     }
 
-    func dragHandle(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
+    func dragHandleBegin(
+        topNode: SKNode,
+        entity: ECS.Entity,
+        startVertex: CGPoint,
+        endVertex: CGPoint,
+        shiftKey: Bool = false
+    ) {
+        dragPrimaryObject = entity
+
+        if let handleRotationOffset = topNode.userData?["rotationOffset"] as? Double {
+            self.handleRotationOffset = handleRotationOffset
+        } else {
+            let te = entity as! ECS.Entities.HandleSpaceEdit
+
+            if topNode === te.primaryNode {
+                self.handleRotationOffset = nil
+            }
+        }
+
         dragCompletionState = type(of: cs)
         ecs.handleSpaceEdit.setDragAnchor()
         enter(InputState.DraggingHandleSpaceAttributes.self)
     }
 
-    func dragSelected(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
-        if !cs.isDraggingState {
-            // If this is a dragBegin, remember what state to return do on dragEnd
-            dragCompletionState = type(of: cs)
+    func dragSelectedBegin(
+        entity: ECS.Entity, startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false
+    ) {
+        if !selectionController.entityIsSelected(entity) {
+            reselect(entity)
+        }
 
-            // And remember where all the dragees started
-            if let selected = selectionController.getSelected() {
-                cs.setDragAnchors(for: selected)
-            }
+        dragCompletionState = type(of: cs)
+
+        // And remember where all the dragees started
+        if let selected = selectionController.getSelected() {
+            cs.setDragAnchors(for: selected)
         }
 
         enter(InputState.DraggingGenericEntity.self)
-        cs.drag(startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey)
+        (cs as! InputStateProtocols.Drag).drag(startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey)
+    }
+
+    func reselect(_ entity: ECS.Entity) {
+        let ss = selectionController.selectionState()
+
+        selectionController.deselectAll()
+        selectionController.select(entity)
+
+        if !ss.contains(where: { $0 == type(of: entity) }) {
+            // The newly selected entity is of a type that was not
+            // already selected. For example, waypoints were selected
+            // and we just selected a gremlin. For that we need to
+            // enter gremlin-planting state. Or if gremlins were selected
+            // and we just selected a waypoint, we need to go to waypoint-
+            // planting state
+            switch entity {
+            case is ECS.Entities.Gremlin:
+                enter(InputState.PrimaryState.self)
+                break
+
+            case is ECS.Entities.Waypoint:
+                enter(InputState.PlaceWaypoint.self)
+                break
+
+            default:
+                fatalError()
+            }
+        }
+    }
+
+    func tap(at position: CGPoint, shiftKey: Bool = false) {
+        guard let tappedNode = scene.getTopNode(at: position) else {
+            tapBackground(at: position, shiftKey: shiftKey)
+            return
+        }
+
+        guard let entity = ecs.getOwnerEntity(for: tappedNode) else {
+            // So far we don't have any tappable sprites that aren't
+            // entities or children of entities
+            return
+        }
+
+        tapEntity(entity, shiftKey: shiftKey)
     }
 
     func tapBackground(at position: CGPoint, shiftKey: Bool = false) {
-        cs.tapBackground(at: position, shiftKey: shiftKey)
+        (cs as! InputStateProtocols.TapBackground).tapBackground(at: position, shiftKey: shiftKey)
 
         if cs is InputState.EditSpaceAttributes {
             // We're in edit mode and the user clicked on
             // the background. Exit edit mode, and pass the
             // tap to the new state
-            enter(dragCompletionState)
-            cs.tapBackground(at: position, shiftKey: shiftKey)
+            enter(editCompletionState)
+            (cs as! InputStateProtocols.TapBackground).tapBackground(at: position, shiftKey: shiftKey)
             return
         }
     }
@@ -122,12 +243,12 @@ final class InputStateMachine: GKStateMachine {
             return
         }
 
-        cs.tapEntity(entity, shiftKey: shiftKey)
+        (cs as! InputStateProtocols.TapEntity).tapEntity(entity, shiftKey: shiftKey)
 
         if cs is InputState.EditSpaceAttributes {
             // We're in edit mode and the user clicked on
             // an entity other than the handles. Leave edit mode
-            enter(dragCompletionState)
+            enter(editCompletionState)
             return
         }
     }

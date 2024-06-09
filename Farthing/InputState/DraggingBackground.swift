@@ -5,14 +5,19 @@ import GameplayKit
 
 extension InputState {
 
-    final class DraggingBackground: InputState {
-        override var isDraggingState: Bool { true }
-
-        override func drag(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool) {
+    final class DraggingBackground: InputState,
+                                    InputStateProtocols.Drag,
+                                    InputStateProtocols.DragEnd
+    {
+        func drag(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool) {
             sm.selectionMarquee.draw(from: startVertex, to: endVertex)
         }
 
-        override func dragEnd(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
+        func dragEnd(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
+            defer {
+                sm.dragEnd(startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey)
+            }
+
             sm.selectionMarquee.reset()
 
             let rect = sm.selectionMarquee.makeRectangle(vertexA: startVertex, vertexB: endVertex)

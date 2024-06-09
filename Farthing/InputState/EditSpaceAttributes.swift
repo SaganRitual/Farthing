@@ -5,10 +5,19 @@ import GameplayKit
 
 extension InputState {
 
-    final class EditSpaceAttributes: InputState {
-        override var isTappableState: Bool { true }
+    final class EditSpaceAttributes: InputState,
+                                     InputStateProtocols.ControlTap,
+                                     InputStateProtocols.ControlTapEntity,
+                                     InputStateProtocols.Drag,
+                                     InputStateProtocols.Tap,
+                                     InputStateProtocols.TapBackground,
+                                     InputStateProtocols.TapEntity
+    {
+        func controlTap(at position: CGPoint, shiftKey: Bool = false) {
+            sm.controlTap(at: position, shiftKey: shiftKey)
+        }
 
-        override func controlTapEntity(_ newTargetEntity: ECS.Entity, shiftKey: Bool = false) {
+        func controlTapEntity(_ newTargetEntity: ECS.Entity, shiftKey: Bool = false) {
             let previousTargetEntity = sm.ecs.handleSpaceEdit.targetEntity!
 
             sm.ecs.handleSpaceEdit.detach()
@@ -28,12 +37,20 @@ extension InputState {
             }
         }
 
-        override func tapBackground(at position: CGPoint, shiftKey: Bool = false) {
+        func drag(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
+            sm.dragBegin(startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey)
+        }
+
+        func tap(at position: CGPoint, shiftKey: Bool = false) {
+            sm.tap(at: position, shiftKey: shiftKey)
+        }
+
+        func tapBackground(at position: CGPoint, shiftKey: Bool = false) {
             sm.ecs.handleSpaceEdit.detach()
             sm.selectionController.deselectAll()
         }
 
-        override func tapEntity(_ entity: ECS.Entity, shiftKey: Bool = false) {
+        func tapEntity(_ entity: ECS.Entity, shiftKey: Bool = false) {
             sm.ecs.handleSpaceEdit.detach()
             sm.selectionController.deselectAll()
             sm.selectionController.select(entity)

@@ -5,10 +5,11 @@ import GameplayKit
 
 extension InputState {
 
-    final class DraggingGenericEntity: InputState {
-        override var isDraggingState: Bool { true }
-
-        override func drag(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
+    final class DraggingGenericEntity: InputState,
+                                       InputStateProtocols.Drag,
+                                       InputStateProtocols.DragEnd
+    {
+        func drag(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
             var sv = sm.scene.convertPoint(fromView: startVertex)
             var ev = sm.scene.convertPoint(fromView: endVertex)
 
@@ -18,6 +19,11 @@ extension InputState {
             let entities = sm.selectionController.getSelected()!
 
             sm.scene.moveSprites(entities: entities, startVertex: sv, endVertex: ev)
+        }
+
+        func dragEnd(startVertex: CGPoint, endVertex: CGPoint, shiftKey: Bool = false) {
+            sm.dragPrimaryObject = nil
+            sm.dragEnd(startVertex: startVertex, endVertex: endVertex, shiftKey: shiftKey)
         }
     }
 

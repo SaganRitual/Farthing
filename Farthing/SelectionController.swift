@@ -93,6 +93,18 @@ final class SelectionController {
         entities.forEach { select($0) }
     }
 
+    func selectionState() -> [ECS.Entity.Type] {
+        var result: [ECS.Entity.Type] = []
+
+        getSelected()?.forEach { entity in
+            if !result.contains(where: { $0 == type(of: entity) }) {
+                result.append(type(of: entity))
+            }
+        }
+
+        return result
+    }
+
     func toggleSelect(_ entity: ECS.Entity) {
         let selectioner = entity.component(ofType: ECS.Components.Selectioner.self)!
         selectioner.toggleSelect()
